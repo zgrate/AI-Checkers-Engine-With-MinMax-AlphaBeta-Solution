@@ -345,9 +345,12 @@ class Game:
 
 
 def execute_game(levels=5, alpha_beta=True, method="simple", folder="output", game_details=False, repeat_game=1):
-    with open(os.path.join(folder, f"{levels}_{alpha_beta}_{method}_{datetime.now()}.txt"), "w",
+    with open(os.path.join(folder,
+                           f"{levels}_{alpha_beta}_{method}_{datetime.now().strftime('%m_%d_%Y_%H_%M_%S_%f')}.txt"),
+              "w",
               encoding="utf-8") as output:
         for i in range(repeat_game):
+            print(f"Run {i}/{repeat_game} for {levels} {alpha_beta} {method}")
             game = Game(levels, alpha_beta, method)
             start_time = time.time()
             output.write(f"{i} {repeat_game} {datetime.now()} {start_time} {levels} {alpha_beta} {method}\n")
