@@ -1,7 +1,13 @@
+import os
+import random
+import time
 from copy import deepcopy
+from datetime import datetime
 
 import numpy as np
 from numpy import ndarray
+
+from algorithm import get_pos_of_all, get_all_the_permissable_moves, evaluate_best_move
 
 
 class Plansza:
@@ -12,6 +18,7 @@ class Plansza:
     def __init__(self, plansza=None):
         if plansza is None:
             self.board = np.zeros((Plansza.SIZE_X, Plansza.SIZE_Y))
+            self.create_start_board()
         else:
             self.board = plansza
 
@@ -21,30 +28,30 @@ class Plansza:
         self.board[0][1] = 1
         self.board[0][3] = 1
         self.board[0][5] = 1
-        # self.board[0][7] = 1
-        self.board[6][5] = 1
+        self.board[0][7] = 1
+        # self.board[6][5] = 1
 
-        # self.board[1][0] = 1
-        self.board[2][1] = 1
-        # self.board[1][2] = 1
-        self.board[2][3] = 1
-        # self.board[1][4] = 1
-        self.board[4][5] = 1
-        # self.board[1][6] = 1
-        self.board[2][5] = 1
+        self.board[1][0] = 1
+        # self.board[2][1] = 1
+        self.board[1][2] = 1
+        # self.board[2][3] = 1
+        self.board[1][4] = 1
+        # self.board[4][5] = 1
+        self.board[1][6] = 1
+        # self.board[2][5] = 1
 
         self.board[6][1] = -1
         self.board[6][3] = -1
-        # self.board[6][5] = -1
-        self.board[5][6] = -1
+        self.board[6][5] = -1
+        # self.board[5][6] = -1
         self.board[6][7] = -1
 
         self.board[7][0] = -1
         self.board[7][2] = -1
-        # self.board[7][4] = -1
-        self.board[4][1] = -1
-        # self.board[7][6] = -1
-        self.board[4][3] = -2
+        self.board[7][4] = -1
+        # self.board[4][1] = -1
+        self.board[7][6] = -1
+        # self.board[4][3] = -2
 
     def is_empty(self, pos_y, pos_x) -> bool:
         return self.board[pos_y][pos_x] == 0
@@ -205,40 +212,7 @@ class Plansza:
             longest = self.get_hit_longest(final)
             hits = list(map(lambda road: (road, 1), longest))
             possible_end_position_with_type = hits
-
-        # if any(x[1] == 1 for x in possible_end_position_with_type):
-        #     possible_end_position_with_type = list(filter(lambda possible: possible[1] == 1, possible_end_position_with_type))
-        #     if len(possible_end_position_with_type) > 1:
-        #         maximal = len(max(possible_end_position_with_type, key=lambda poss: len(poss[0]))[0])
-        #         possible_end_position_with_type = list(filter(lambda d: len(d[0]) == maximal, possible_end_position_with_type))
         return possible_end_position_with_type
-
-    # def is_move_legal(self, fromPos: tuple[int, int], toPos: tuple[int, int]) -> bool:
-    #     fromY, fromX = fromPos
-    #     toY, toX = toPos
-    #     if 7 < toY < 0 or 7 < toX < 0:
-    #         return False
-    #     piece = self.board[fromPos]
-    #     if piece == 0:
-    #         return False
-    #     toPos = self.board[toPos]
-    #     if toPos != 0:
-    #         return False
-    #
-    #     if piece == 2 or piece == -2: #damka
-    #         pass
-    #     else:
-    #         if fromX == toX or fromY == toY: #move in straight line
-    #             return False
-    #         elif abs(fromX - toX) == 2 and abs(fromY - toY) == 2:#He is trying to die the enemy xd
-    #             midX = (fromX + toX)/2
-    #             midY = (fromY + toY)/2
-    #
-    #
-    #         elif piece == 1 and fromY < toY: #Blacks only forward down, so y -> 8
-    #             return False
-    #         elif piece == -1 and fromY > toY: #Whites only forward up, so y -> 0
-    #             return False
 
     def score_board_simple_method(self):
         return self.board.sum()
@@ -254,8 +228,6 @@ class Plansza:
                 elif 0 < y < 7 and 0 < x < 7:
                     v *= 2
                 sum += v
-                print(y, x, v)
-
         return sum
 
     def clone_self(self):
@@ -264,16 +236,26 @@ class Plansza:
 
     def move_piece(self, mover_pos, move):
         s = self.clone_self()
+
         if move[1] == 0:
+            target = move[0]
             p = s.board[mover_pos]
             s.board[mover_pos] = 0
-            s.board[move[0]] = p
+            s.board[target] = p
+
         elif move[1] == 1:
+            target = move[0][-1][0]
             p = s.board[mover_pos]
             s.board[mover_pos] = 0
-            s.board[move[0][-1][0]] = p
+            s.board[target] = p
             for target_pos, pawn_to_remove in move[0]:
                 s.board[pawn_to_remove] = 0
+        else:
+            raise Exception("Illegal move")
+        if s.board[target] == -1 and target[0] == 0:
+            s.board[target] = -2
+        elif s.board[target] == 1 and target[0] == 7:
+            s.board[target] = 2
 
         return s
 
@@ -298,19 +280,91 @@ class Plansza:
         return b
 
 
-p = Plansza()
-p.create_start_board()
-print(p)
-# pos = (6, 1)
-pos = (5, 6)
-# p.get_possible_moves_from_position((4, 3))
-# print(p.get_possible_moves_from_position((5, 6)))
-print(p.score_board_simple_method())
-print(p.score_board_weighted_method())
-exit(0)
-possible = p.get_possible_moves_from_position(pos)
-print(possible)
-print(possible[0])
-p = p.move_piece(pos, possible[0])
-print(p)
-print(p.score_board_simple_method())
+class Game:
+    GAME_IN_PROGRESS = "game_in_progress"
+    GAME_WON_WHITE = "whites won"
+    GAME_WON_BLACK = "black won"
+    GAME_DRAW = "draw"
+
+    def __init__(self, levels=5, alpha_beta=True, method="simple"):
+        self.method = method
+        self.alpha_beta = alpha_beta
+        self.levels = levels
+        self.whitesTurn = True
+        self.turn = 0
+        self.plansza = Plansza()
+        self.turns_only_queen = 0
+
+    def ai_turn(self):
+        self.executeTurn(self.whitesTurn)
+        self.turn += 1
+        self.whitesTurn = not self.whitesTurn
+
+    def player1Turn(self):
+        if self.player1TurnNow:
+            self.player1TurnNow = not self.player1TurnNow
+            self.turn += 1
+            self.executeTurn(self.player1White)
+        else:
+            raise Exception()
+
+    def player2Turn(self):
+        if not self.player1TurnNow:
+            self.player1TurnNow = not self.player1TurnNow
+            self.turn += 1
+            self.executeTurn(not self.player1White)
+        else:
+            raise Exception()
+
+    def executeTurn(self, whiteMove: bool):
+        move = evaluate_best_move(self.plansza, whiteMove=whiteMove, levels=self.levels, alpha_beta=self.alpha_beta,
+                                  method=self.method)
+        # print(move)
+        # print(len(get_all_the_permissable_moves(self.plansza, True)), len(get_all_the_permissable_moves(self.plansza, False)))
+        if self.plansza.is_pawn(move[0][0], move[0][1]):
+            self.turns_only_queen = 0
+        else:
+            self.turns_only_queen += 1
+        self.plansza = self.plansza.move_piece(move[0], move[1])
+
+    def random_move(self, whites):
+        move = random.choice(get_all_the_permissable_moves(self.plansza, whites))
+        self.plansza = self.plansza.move_piece(move[0], move[1])
+
+    def get_game_status(self):
+        whites_len = len(get_all_the_permissable_moves(self.plansza, True))
+        black_len = len(get_all_the_permissable_moves(self.plansza, False))
+        if len(get_pos_of_all(self.plansza, True)) == 0 or len(get_all_the_permissable_moves(self.plansza, True)) == 0:
+            return self.GAME_WON_BLACK
+        elif len(get_pos_of_all(self.plansza, False)) == 0 or len(
+                get_all_the_permissable_moves(self.plansza, False)) == 0:
+            return self.GAME_WON_WHITE
+        elif self.turns_only_queen == 28 or (whites_len == 0 and black_len == 0):
+            return self.GAME_DRAW
+        return self.GAME_IN_PROGRESS
+
+
+def execute_game(levels=5, alpha_beta=True, method="simple", folder="output", game_details=False, repeat_game=1):
+    with open(os.path.join(folder, f"{levels}_{alpha_beta}_{method}_{datetime.now()}.txt"), "w",
+              encoding="utf-8") as output:
+        for i in range(repeat_game):
+            game = Game(levels, alpha_beta, method)
+            start_time = time.time()
+            output.write(f"{i} {repeat_game} {datetime.now()} {start_time} {levels} {alpha_beta} {method}\n")
+
+            game.random_move(True)
+            game.random_move(False)
+            if game_details:
+                output.write(str(game.plansza))
+                output.write("\n\n")
+                output.write(f"$ {datetime.now()} {time.time() - start_time} {game.turn} {game.whitesTurn}\n")
+            while game.get_game_status() == Game.GAME_IN_PROGRESS:
+                game.ai_turn()
+                if game_details:
+                    output.write(str(game.plansza))
+                    output.write("\n\n")
+                    output.flush()
+
+            output.write(f"END {datetime.now()} {time.time() - start_time} {game.turn} {game.get_game_status()}\n")
+            output.flush()
+            print(f"WON: {game.get_game_status()}")
