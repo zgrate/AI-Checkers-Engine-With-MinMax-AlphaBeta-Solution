@@ -147,8 +147,13 @@ def get_score(plansza, move, method, negate_score=False):
 
     if method == "simple":
         score = t.score_board_simple_method()
-    else:
+    elif method == "weighted":
         score = t.score_board_weighted_method()
+    elif method == "simple_moveable":
+        score = t.score_board_simple_method() + t.score_board_moveable()
+    elif method == "simple_safe":
+        score = t.score_board_simple_method() + t.score_safe_pawns()
+
     if negate_score:
         return -1 * score
     return score

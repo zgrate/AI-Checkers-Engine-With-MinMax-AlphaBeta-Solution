@@ -217,6 +217,41 @@ class Plansza:
     def score_board_simple_method(self):
         return self.board.sum()
 
+    def score_board_moveable(self):
+        whites = 0
+
+        def count(pos):
+            posY, posX = pos
+            c = 0
+            # 0 - movement
+            # 1 - hit
+            possible_end_position_with_type = []
+            positions_to_check = self.get_possible_positions(posY, posX, self.is_pawn(posY, posX),
+                                                             self.is_white(posY, posX))
+            for possible_pos in positions_to_check:
+                possible_y, possible_x = possible_pos
+                if self.is_empty(possible_y, possible_x):
+                    c += 1
+                    # if self.is_forward_direction(posY, posY-1, self.is_white(posY, posX)):
+                    # possible_end_position_with_type.append((possible_pos, 0))
+            return c
+
+        for pos in get_pos_of_all(self, True):
+            whites -= count(pos)
+        for pos in get_pos_of_all(self, False):
+            whites += count(pos)
+        return whites
+
+    def score_safe_pawns(self):
+        c = 0
+        for posY, posX in get_pos_of_all(self, True):
+            if posX == 7 or posX == 0:
+                c -= 1
+        for posY, posX in get_pos_of_all(self, False):
+            if posX == 7 or posX == 0:
+                c += 1
+        return c
+
     def score_board_weighted_method(self):
         sum = 0
         for y in range(0, 8):
@@ -282,8 +317,8 @@ class Plansza:
 
 class Game:
     GAME_IN_PROGRESS = "game_in_progress"
-    GAME_WON_WHITE = "whites won"
-    GAME_WON_BLACK = "black won"
+    GAME_WON_WHITE = "whites_won"
+    GAME_WON_BLACK = "black_won"
     GAME_DRAW = "draw"
 
     def __init__(self, levels=5, alpha_beta=True, method="simple"):

@@ -9,17 +9,24 @@ def print_hi(name):
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     print_hi('PyCharm')
+    warcaby_gra.execute_game(4, 1, "simple", "", True, 1)
     # p = warcaby_gra.Plansza()
     # p.create_start_board()
     # print(p)
-    for levels in range(1, 6):
-        for method in ["simple", "weighted"]:
-            for alpha_beta in [False, True]:
-                warcaby_gra.execute_game(levels=levels, alpha_beta=alpha_beta, method="simple", folder="output",
-                                         repeat_game=10)
+    # with Pool(processes=4) as pool:
+    #     for levels in range(1, 6):
+    #         for method in ["simple_safe", "simple_moveable"]:
+    #             for alpha_beta in [False, True]:
+    #                 pool.apply_async(warcaby_gra.execute_game, [levels, alpha_beta, method, "output2", False, 50])
+    #     for levels in range(6, 10):
+    #         for method in ["simple_safe", "simple_moveable"]:
+    #             pool.apply_async(warcaby_gra.execute_game, [levels, True, method, "output2", False, 50])
+    #
+    #     pool.close()
+    #     pool.join()
 
     # print(get_all_the_permissable_moves(p, True))
-    # print(evaluate_best_move(p, iAmWhite=True, levels=7, alpha_beta=True, method="simple"))
+    # print(evaluate_best_move(p, iAmWhite=True, levels=7, alpha_beta=True, method="simple", ))
     # pos = (6, 1)
     # pos = (5, 6)
     # # p.get_possible_moves_from_position((4, 3))
